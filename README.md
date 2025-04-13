@@ -4,10 +4,13 @@ Run either in codespace or on Linux machine. Create codespace by clicking green 
 
 How to run the setup stuff:
 
-    bash setupScript.bash
+    $ bash setupScript.bash
+
+To run demo.sql in MySQL:
+
     mysql> source ./demo.sql
 
-How to quickly start mysql:
+How to quickly start mysql (if not already in it: "mysql> "):
 
-    start server & mysql: bash startMySQL.bash
-    server already started, mysql: sudo mysql
+    start server & mysql:                   $ bash startMySQL.bash
+    server already started, start mysql:    $ sudo mysql
