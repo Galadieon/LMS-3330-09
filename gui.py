@@ -881,7 +881,7 @@ class LMSApp:
                     Due_Date,
                     Returned_date,
                     TotalDays,
-                    `Number of days later return`,
+                    `Number of days returned late`,
                     `Branch ID`,
                     LateFeeBalance
                 FROM vBookLoanInfo
@@ -902,7 +902,7 @@ class LMSApp:
                             vBLI.Due_Date,
                             vBLI.Returned_date,
                             vBLI.TotalDays,
-                            vBLI.`Number of days later return`,
+                            vBLI.`Number of days returned late`,
                             vBLI.`Branch ID`,
                             vBLI.LateFeeBalance
                         FROM vBookLoanInfo AS vBLI
@@ -921,7 +921,7 @@ class LMSApp:
                             Due_Date,
                             Returned_date,
                             TotalDays,
-                            `Number of days later return`,
+                            `Number of days returned late`,
                             `Branch ID`,
                             LateFeeBalance
                         FROM vBookLoanInfo
@@ -972,7 +972,7 @@ class LMSApp:
             else:
                 # Insert results into the Treeview with formatting
                 for row in results:
-                    # `Book Title`, Date_Out, Due_Date, Returned_date, TotalDays, `Number of days later return`, `Branch ID`, LateFeeBalance
+                    # `Book Title`, Date_Out, Due_Date, Returned_date, TotalDays, `Number of days returned late`, `Branch ID`, LateFeeBalance
                     book_title, date_out, due_date, returned_date, total_days, days_late, branch_id, late_fee_balance = row
 
                     # Format LateFeeBalance
