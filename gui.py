@@ -57,16 +57,16 @@ class LMSApp:
         self.tab_task2_q1 = ttk.Frame(self.notebook)
         self.tab_task2_q2 = ttk.Frame(self.notebook)
         self.tab_task2_q3 = ttk.Frame(self.notebook)
-        self.tab_task2_q4 = ttk.Frame(self.notebook) # New tab for Q4
-        self.tab_task2_q5 = ttk.Frame(self.notebook)
+        self.tab_task2_q4 = ttk.Frame(self.notebook)
+        self.tab_task2_q5 = ttk.Frame(self.notebook) # New tab for Q5
         self.tab_task2_q6a = ttk.Frame(self.notebook)
         self.tab_task2_q6b = ttk.Frame(self.notebook)
 
         self.notebook.add(self.tab_task2_q1, text='Q1 (Checkout)')
         self.notebook.add(self.tab_task2_q2, text='Q2 (Add Borrower)')
         self.notebook.add(self.tab_task2_q3, text='Q3 (Add Book)')
-        self.notebook.add(self.tab_task2_q4, text='Q4 (Copies Loaned)') # Add Q4 tab
-        self.notebook.add(self.tab_task2_q5, text='Q5 (Late Loans by Due Date)')
+        self.notebook.add(self.tab_task2_q4, text='Q4 (Copies Loaned)')
+        self.notebook.add(self.tab_task2_q5, text='Q5 (Late Loans by Due Date)') # Add Q5 tab
         self.notebook.add(self.tab_task2_q6a, text='Q6a (Borrower Late Fees)')
         self.notebook.add(self.tab_task2_q6b, text='Q6b (Book Loan Info)')
 
@@ -74,7 +74,8 @@ class LMSApp:
         self.setup_tab_task2_q1()
         self.setup_tab_task2_q2()
         self.setup_tab_task2_q3()
-        self.setup_tab_task2_q4() # Setup the copies loaned tab
+        self.setup_tab_task2_q4()
+        self.setup_tab_task2_q5() # Setup the late loans tab
         # Add methods to setup other tabs similarly
 
     def setup_tab_task2_q1(self):
@@ -545,6 +546,129 @@ class LMSApp:
             if cursor:
                 cursor.close()
 
+    def setup_tab_task2_q5(self):
+        """Sets up the interface for Query 5 (Late Loans by Due Date Range)."""
+        frame = self.tab_task2_q5
+
+        ttk.Label(frame, text="Late Loans by Due Date Range", font=('Arial', 14)).pack(pady=10)
+        ttk.Label(frame, text="Query Purpose: List book loans returned late within a specified due date range.").pack(pady=5)
+
+        input_frame = ttk.Frame(frame)
+        input_frame.pack(pady=10)
+
+        ttk.Label(input_frame, text="Start Due Date (YYYY-MM-DD):").grid(row=0, column=0, padx=5, pady=5, sticky="w")
+        self.q5_start_date_entry = ttk.Entry(input_frame, width=40)
+        self.q5_start_date_entry.grid(row=0, column=1, padx=5, pady=5)
+
+        ttk.Label(input_frame, text="End Due Date (YYYY-MM-DD):").grid(row=1, column=0, padx=5, pady=5, sticky="w")
+        self.q5_end_date_entry = ttk.Entry(input_frame, width=40)
+        self.q5_end_date_entry.grid(row=1, column=1, padx=5, pady=5)
+
+        ttk.Button(frame, text="List Late Loans", command=self.execute_task2_q5).pack(pady=10)
+
+        self.q5_output_label = ttk.Label(frame, text="")
+        self.q5_output_label.pack(pady=10)
+
+        ttk.Label(frame, text="SQL Query Executed:").pack(pady=5)
+        self.q5_sql_query_text = tk.Text(frame, height=8, width=70, state='disabled')
+        self.q5_sql_query_text.pack(pady=5)
+
+        ttk.Label(frame, text="Late Loans Output:").pack(pady=5)
+        # Using Treeview to display the late loans information
+        self.q5_late_loans_output_tree = ttk.Treeview(frame, columns=('book_id', 'branch_id', 'card_no', 'date_out', 'due_date', 'returned_date', 'num_of_days_late'), show='headings')
+        self.q5_late_loans_output_tree.heading('book_id', text='Book ID')
+        self.q5_late_loans_output_tree.heading('branch_id', text='Branch ID')
+        self.q5_late_loans_output_tree.heading('card_no', text='Card No')
+        self.q5_late_loans_output_tree.heading('date_out', text='Date Out')
+        self.q5_late_loans_output_tree.heading('due_date', text='Due Date')
+        self.q5_late_loans_output_tree.heading('returned_date', text='Returned Date')
+        self.q5_late_loans_output_tree.heading('num_of_days_late', text='Days Late')
+        self.q5_late_loans_output_tree.column('book_id', width=80, anchor='center')
+        self.q5_late_loans_output_tree.column('branch_id', width=80, anchor='center')
+        self.q5_late_loans_output_tree.column('card_no', width=100, anchor='center')
+        self.q5_late_loans_output_tree.column('date_out', width=120, anchor='center')
+        self.q5_late_loans_output_tree.column('due_date', width=120, anchor='center')
+        self.q5_late_loans_output_tree.column('returned_date', width=120, anchor='center')
+        self.q5_late_loans_output_tree.column('num_of_days_late', width=100, anchor='center')
+        self.q5_late_loans_output_tree.pack(pady=5, fill="both", expand=True)
+
+
+    def execute_task2_q5(self):
+        """Executes the query for Query 5 (Late Loans by Due Date Range)."""
+        start_date_str = self.q5_start_date_entry.get()
+        end_date_str = self.q5_end_date_entry.get()
+
+        if not start_date_str or not end_date_str:
+            messagebox.showwarning("Input Error", "Please enter both start and end due dates.")
+            return
+
+        try:
+            # Validate date format
+            datetime.datetime.strptime(start_date_str, '%Y-%m-%d')
+            datetime.datetime.strptime(end_date_str, '%Y-%m-%d')
+        except ValueError:
+            messagebox.showwarning("Date Format Error", "Please enter dates in YYYY-MM-DD format.")
+            return
+
+        cursor = None
+        try:
+            cursor = self.db_connection.cursor()
+
+            # SQL query to list late book loans within a due date range
+            sql_query = """
+                SELECT
+                    B_L.book_id,
+                    B_L.branch_id,
+                    B_L.card_no,
+                    B_L.date_out,
+                    B_L.due_date,
+                    B_L.Returned_date,
+                    CASE
+                        WHEN B_L.Returned_date IS NULL OR DATEDIFF(B_L.Returned_date, B_L.due_date) <= 0 THEN 0
+                        ELSE DATEDIFF(B_L.Returned_date, B_L.due_date)
+                    END AS num_of_days_late
+                FROM Book_Loans AS B_L
+                WHERE B_L.due_date BETWEEN %s AND %s
+                HAVING num_of_days_late > 0;
+            """
+            values = (start_date_str, end_date_str)
+
+            # Display the query being executed
+            self.q5_sql_query_text.config(state='normal')
+            self.q5_sql_query_text.delete(1.0, tk.END)
+            self.q5_sql_query_text.insert(tk.END, sql_query.replace('%s', "'{}'").format(start_date_str, end_date_str))
+            self.q5_sql_query_text.config(state='disabled')
+
+
+            cursor.execute(sql_query, values)
+            results = cursor.fetchall()
+
+            # Clear previous results in the Treeview
+            for item in self.q5_late_loans_output_tree.get_children():
+                self.q5_late_loans_output_tree.delete(item)
+
+            if not results:
+                self.q5_output_label.config(text=f"No late loans found with due dates between {start_date_str} and {end_date_str}.")
+                print("Action output: 0 row(s) returned.")
+            else:
+                # Insert results into the Treeview
+                for row in results:
+                    # Format date objects to strings for display in Treeview
+                    formatted_row = tuple(str(item) if isinstance(item, datetime.date) else item for item in row)
+                    self.q5_late_loans_output_tree.insert('', tk.END, values=formatted_row)
+                self.q5_output_label.config(text=f"Late loans with due dates between {start_date_str} and {end_date_str}:")
+                print(f"Action output: {len(results)} row(s) returned.")
+
+        except Error as e:
+            messagebox.showerror("Database Error", f"Error listing late loans: {e}")
+            print(f"Error listing late loans: {e}")
+        except Exception as e:
+             messagebox.showerror("Application Error", f"An unexpected error occurred: {e}")
+             print(f"An unexpected error occurred: {e}")
+        finally:
+            if cursor:
+                cursor.close()
+
 
     def setup_tab_task2_q2(self):
         """Sets up the interface for Query 2 (Add New Borrower)."""
@@ -750,6 +874,229 @@ class LMSApp:
             print(f"Error adding book: {e}")
             if self.db_connection:
                  self.db_connection.rollback() # Roll back changes if something goes wrong
+        except Exception as e:
+             messagebox.showerror("Application Error", f"An unexpected error occurred: {e}")
+             print(f"An unexpected error occurred: {e}")
+        finally:
+            if cursor:
+                cursor.close()
+
+    def setup_tab_task2_q4(self):
+        """Sets up the interface for Query 4 (Copies Loaned per Branch)."""
+        frame = self.tab_task2_q4
+
+        ttk.Label(frame, text="Copies Loaned per Branch", font=('Arial', 14)).pack(pady=10)
+        ttk.Label(frame, text="Query Purpose: List the number of copies loaned out per branch for a given book title.").pack(pady=5)
+
+        input_frame = ttk.Frame(frame)
+        input_frame.pack(pady=10)
+
+        ttk.Label(input_frame, text="Book Title:").grid(row=0, column=0, padx=5, pady=5, sticky="w")
+        self.q4_book_title_entry = ttk.Entry(input_frame, width=40)
+        self.q4_book_title_entry.grid(row=0, column=1, padx=5, pady=5)
+
+        ttk.Button(frame, text="List Copies Loaned", command=self.execute_task2_q4).pack(pady=10)
+
+        self.q4_output_label = ttk.Label(frame, text="")
+        self.q4_output_label.pack(pady=10)
+
+        ttk.Label(frame, text="SQL Query Executed:").pack(pady=5)
+        self.q4_sql_query_text = tk.Text(frame, height=4, width=70, state='disabled')
+        self.q4_sql_query_text.pack(pady=5)
+
+        ttk.Label(frame, text="Copies Loaned Output:").pack(pady=5)
+        # Using Treeview to display the copies loaned out per branch
+        self.q4_copies_output_tree = ttk.Treeview(frame, columns=('book_id', 'book_title', 'branch_id', 'branch_name', 'num_of_copies_loaned'), show='headings')
+        self.q4_copies_output_tree.heading('book_id', text='Book ID')
+        self.q4_copies_output_tree.heading('book_title', text='Book Title')
+        self.q4_copies_output_tree.heading('branch_id', text='Branch ID')
+        self.q4_copies_output_tree.heading('branch_name', text='Branch Name')
+        self.q4_copies_output_tree.heading('num_of_copies_loaned', text='Copies Loaned')
+        self.q4_copies_output_tree.column('book_id', width=80, anchor='center')
+        self.q4_copies_output_tree.column('book_title', width=200)
+        self.q4_copies_output_tree.column('branch_id', width=80, anchor='center')
+        self.q4_copies_output_tree.column('branch_name', width=150)
+        self.q4_copies_output_tree.column('num_of_copies_loaned', width=120, anchor='center')
+        self.q4_copies_output_tree.pack(pady=5, fill="both", expand=True)
+
+
+    def execute_task2_q4(self):
+        """Executes the query for Query 4 (Copies Loaned per Branch)."""
+        book_title = self.q4_book_title_entry.get()
+
+        if not book_title:
+            messagebox.showwarning("Input Error", "Please enter a book title.")
+            return
+
+        cursor = None
+        try:
+            cursor = self.db_connection.cursor()
+
+            # SQL query to list copies loaned out per branch for a given book title
+            sql_query = """
+                SELECT
+                    Bk.book_id,
+                    Bk.title,
+                    B_L.branch_id,
+                    L_B.branch_name,
+                    COUNT(*) AS num_of_copies_loaned
+                FROM Book AS Bk
+                JOIN Book_Loans AS B_L ON Bk.book_id = B_L.book_id
+                JOIN Library_Branch AS L_B ON B_L.branch_id = L_B.branch_id
+                WHERE Bk.title = %s
+                GROUP BY Bk.book_id, Bk.title, B_L.branch_id, L_B.branch_name;
+            """
+            values = (book_title,)
+
+            # Display the query being executed
+            self.q4_sql_query_text.config(state='normal')
+            self.q4_sql_query_text.delete(1.0, tk.END)
+            self.q4_sql_query_text.insert(tk.END, sql_query.replace('%s', f"'{book_title}'"))
+            self.q4_sql_query_text.config(state='disabled')
+
+            cursor.execute(sql_query, values)
+            results = cursor.fetchall()
+
+            # Clear previous results in the Treeview
+            for item in self.q4_copies_output_tree.get_children():
+                self.q4_copies_output_tree.delete(item)
+
+            if not results:
+                self.q4_output_label.config(text=f"No copies of '{book_title}' are currently loaned out.")
+                print("Action output: 0 row(s) returned.")
+            else:
+                # Insert results into the Treeview
+                for row in results:
+                    self.q4_copies_output_tree.insert('', tk.END, values=row)
+                self.q4_output_label.config(text=f"Copies loaned out for '{book_title}':")
+                print(f"Action output: {len(results)} row(s) returned.")
+
+        except Error as e:
+            messagebox.showerror("Database Error", f"Error listing copies loaned: {e}")
+            print(f"Error listing copies loaned: {e}")
+        except Exception as e:
+             messagebox.showerror("Application Error", f"An unexpected error occurred: {e}")
+             print(f"An unexpected error occurred: {e}")
+        finally:
+            if cursor:
+                cursor.close()
+
+    def setup_tab_task2_q5(self):
+        """Sets up the interface for Query 5 (Late Loans by Due Date Range)."""
+        frame = self.tab_task2_q5
+
+        ttk.Label(frame, text="Late Loans by Due Date Range", font=('Arial', 14)).pack(pady=10)
+        ttk.Label(frame, text="Query Purpose: List book loans returned late within a specified due date range.").pack(pady=5)
+
+        input_frame = ttk.Frame(frame)
+        input_frame.pack(pady=10)
+
+        ttk.Label(input_frame, text="Start Due Date (YYYY-MM-DD):").grid(row=0, column=0, padx=5, pady=5, sticky="w")
+        self.q5_start_date_entry = ttk.Entry(input_frame, width=40)
+        self.q5_start_date_entry.grid(row=0, column=1, padx=5, pady=5)
+
+        ttk.Label(input_frame, text="End Due Date (YYYY-MM-DD):").grid(row=1, column=0, padx=5, pady=5, sticky="w")
+        self.q5_end_date_entry = ttk.Entry(input_frame, width=40)
+        self.q5_end_date_entry.grid(row=1, column=1, padx=5, pady=5)
+
+        ttk.Button(frame, text="List Late Loans", command=self.execute_task2_q5).pack(pady=10)
+
+        self.q5_output_label = ttk.Label(frame, text="")
+        self.q5_output_label.pack(pady=10)
+
+        ttk.Label(frame, text="SQL Query Executed:").pack(pady=5)
+        self.q5_sql_query_text = tk.Text(frame, height=8, width=70, state='disabled')
+        self.q5_sql_query_text.pack(pady=5)
+
+        ttk.Label(frame, text="Late Loans Output:").pack(pady=5)
+        # Using Treeview to display the late loans information
+        self.q5_late_loans_output_tree = ttk.Treeview(frame, columns=('book_id', 'branch_id', 'card_no', 'date_out', 'due_date', 'returned_date', 'num_of_days_late'), show='headings')
+        self.q5_late_loans_output_tree.heading('book_id', text='Book ID')
+        self.q5_late_loans_output_tree.heading('branch_id', text='Branch ID')
+        self.q5_late_loans_output_tree.heading('card_no', text='Card No')
+        self.q5_late_loans_output_tree.heading('date_out', text='Date Out')
+        self.q5_late_loans_output_tree.heading('due_date', text='Due Date')
+        self.q5_late_loans_output_tree.heading('returned_date', text='Returned Date')
+        self.q5_late_loans_output_tree.heading('num_of_days_late', text='Days Late')
+        self.q5_late_loans_output_tree.column('book_id', width=80, anchor='center')
+        self.q5_late_loans_output_tree.column('branch_id', width=80, anchor='center')
+        self.q5_late_loans_output_tree.column('card_no', width=100, anchor='center')
+        self.q5_late_loans_output_tree.column('date_out', width=120, anchor='center')
+        self.q5_late_loans_output_tree.column('due_date', width=120, anchor='center')
+        self.q5_late_loans_output_tree.column('returned_date', width=120, anchor='center')
+        self.q5_late_loans_output_tree.column('num_of_days_late', width=100, anchor='center')
+        self.q5_late_loans_output_tree.pack(pady=5, fill="both", expand=True)
+
+
+    def execute_task2_q5(self):
+        """Executes the query for Query 5 (Late Loans by Due Date Range)."""
+        start_date_str = self.q5_start_date_entry.get()
+        end_date_str = self.q5_end_date_entry.get()
+
+        if not start_date_str or not end_date_str:
+            messagebox.showwarning("Input Error", "Please enter both start and end due dates.")
+            return
+
+        try:
+            # Validate date format
+            datetime.datetime.strptime(start_date_str, '%Y-%m-%d')
+            datetime.datetime.strptime(end_date_str, '%Y-%m-%d')
+        except ValueError:
+            messagebox.showwarning("Date Format Error", "Please enter dates in YYYY-MM-DD format.")
+            return
+
+        cursor = None
+        try:
+            cursor = self.db_connection.cursor()
+
+            # SQL query to list late book loans within a due date range
+            sql_query = """
+                SELECT
+                    B_L.book_id,
+                    B_L.branch_id,
+                    B_L.card_no,
+                    B_L.date_out,
+                    B_L.due_date,
+                    B_L.Returned_date,
+                    CASE
+                        WHEN B_L.Returned_date IS NULL OR DATEDIFF(B_L.Returned_date, B_L.due_date) <= 0 THEN 0
+                        ELSE DATEDIFF(B_L.Returned_date, B_L.due_date)
+                    END AS num_of_days_late
+                FROM Book_Loans AS B_L
+                WHERE B_L.due_date BETWEEN %s AND %s
+                HAVING num_of_days_late > 0;
+            """
+            values = (start_date_str, end_date_str)
+
+            # Display the query being executed
+            self.q5_sql_query_text.config(state='normal')
+            self.q5_sql_query_text.delete(1.0, tk.END)
+            self.q5_sql_query_text.insert(tk.END, sql_query.replace('%s', "'{}'").format(start_date_str, end_date_str))
+            self.q5_sql_query_text.config(state='disabled')
+
+
+            cursor.execute(sql_query, values)
+            results = cursor.fetchall()
+
+            # Clear previous results in the Treeview
+            for item in self.q5_late_loans_output_tree.get_children():
+                self.q5_late_loans_output_tree.delete(item)
+
+            if not results:
+                self.q5_output_label.config(text=f"No late loans found with due dates between {start_date_str} and {end_date_str}.")
+                print("Action output: 0 row(s) returned.")
+            else:
+                # Insert results into the Treeview
+                for row in results:
+                    # Format date objects to strings for display in Treeview
+                    formatted_row = tuple(str(item) if isinstance(item, datetime.date) else item for item in row)
+                    self.q5_late_loans_output_tree.insert('', tk.END, values=formatted_row)
+                self.q5_output_label.config(text=f"Late loans with due dates between {start_date_str} and {end_date_str}:")
+                print(f"Action output: {len(results)} row(s) returned.")
+
+        except Error as e:
+            messagebox.showerror("Database Error", f"Error listing late loans: {e}")
+            print(f"Error listing late loans: {e}")
         except Exception as e:
              messagebox.showerror("Application Error", f"An unexpected error occurred: {e}")
              print(f"An unexpected error occurred: {e}")
