@@ -104,96 +104,96 @@ FIELDS OPTIONALLY ENCLOSED BY '"' TERMINATED BY ','
 LINES TERMINATED BY '\r\n'
 IGNORE 1 LINES;
 
-SELECT * FROM Publisher;
-SELECT * FROM Library_Branch;
-SELECT * FROM Borrower;
-SELECT * FROM Book;
-SELECT * FROM Book_Authors;
-SELECT * FROM Book_Copies;
-SELECT * FROM Book_Loans;
+-- SELECT * FROM Publisher;
+-- SELECT * FROM Library_Branch;
+-- SELECT * FROM Borrower;
+-- SELECT * FROM Book;
+-- SELECT * FROM Book_Authors;
+-- SELECT * FROM Book_Copies;
+-- SELECT * FROM Book_Loans;
 
--- TASK 3: Count Records
+-- -- TASK 3: Count Records
 
-SELECT 'Book' AS TableName, COUNT(*) AS Records FROM Book
-UNION 
-SELECT 'Publisher', COUNT(*) FROM Publisher  
-UNION  
-SELECT 'Borrower', COUNT(*) FROM Borrower  
-UNION  
-SELECT 'Library_Branch', COUNT(*) FROM Library_Branch  
-UNION  
-SELECT 'Book_Loans', COUNT(*) FROM Book_Loans  
-UNION  
-SELECT 'Book_Copies', COUNT(*) FROM Book_Copies  
-UNION  
-SELECT 'Book_Authors', COUNT(*) FROM Book_Authors;
+-- SELECT 'Book' AS TableName, COUNT(*) AS Records FROM Book
+-- UNION 
+-- SELECT 'Publisher', COUNT(*) FROM Publisher  
+-- UNION  
+-- SELECT 'Borrower', COUNT(*) FROM Borrower  
+-- UNION  
+-- SELECT 'Library_Branch', COUNT(*) FROM Library_Branch  
+-- UNION  
+-- SELECT 'Book_Loans', COUNT(*) FROM Book_Loans  
+-- UNION  
+-- SELECT 'Book_Copies', COUNT(*) FROM Book_Copies  
+-- UNION  
+-- SELECT 'Book_Authors', COUNT(*) FROM Book_Authors;
 
--- TASK 4: Execute Queries
+-- -- TASK 4: Execute Queries
 
--- Q1: Insert Yourself as a New Borrower 
-INSERT INTO Borrower (name, address, phone) VALUES ('Alice Cooper', '999 Unity St, Plano, TX', '(999) 123-4567');
-SELECT * FROM Borrower;
+-- -- Q1: Insert Yourself as a New Borrower 
+-- INSERT INTO Borrower (name, address, phone) VALUES ('Alice Cooper', '999 Unity St, Plano, TX', '(999) 123-4567');
+-- SELECT * FROM Borrower;
 
--- Q2: Update Your Phone Number 
-UPDATE Borrower SET phone = '(837) 721-8965' WHERE name = 'Alice Cooper';
-SELECT * FROM Borrower;
+-- -- Q2: Update Your Phone Number 
+-- UPDATE Borrower SET phone = '(837) 721-8965' WHERE name = 'Alice Cooper';
+-- SELECT * FROM Borrower;
 
--- Q3: Increase Number of Copies for East Branch 
-UPDATE Book_Copies SET no_of_copies = no_of_copies + 1 WHERE branch_id = (SELECT branch_id FROM Library_Branch WHERE branch_name = 'East Branch');
-SELECT * FROM Book_Copies;
+-- -- Q3: Increase Number of Copies for East Branch 
+-- UPDATE Book_Copies SET no_of_copies = no_of_copies + 1 WHERE branch_id = (SELECT branch_id FROM Library_Branch WHERE branch_name = 'East Branch');
+-- SELECT * FROM Book_Copies;
 
--- Q4a: Insert New Book, Author, and Publisher 
-INSERT INTO Publisher (publisher_name, phone, address) VALUES ('Oxford Publishing', '(111) 222-3333', '123 Oxford St, UK'); 
-INSERT INTO Book (book_id, title, book_publisher) VALUES (999, 'Harry Potter and the Sorcerer''s Stone', 'Oxford Publishing'); 
-INSERT INTO Book_Authors (book_id, author_name) VALUES (999, 'J.K. Rowling'); 
+-- -- Q4a: Insert New Book, Author, and Publisher 
+-- INSERT INTO Publisher (publisher_name, phone, address) VALUES ('Oxford Publishing', '(111) 222-3333', '123 Oxford St, UK'); 
+-- INSERT INTO Book (book_id, title, book_publisher) VALUES (999, 'Harry Potter and the Sorcerer''s Stone', 'Oxford Publishing'); 
+-- INSERT INTO Book_Authors (book_id, author_name) VALUES (999, 'J.K. Rowling'); 
 
--- Q4b: Insert New Branches 
-INSERT INTO Library_Branch (branch_id, branch_name, branch_address) VALUES (4, 'North Branch', '456 NW, Irving, TX 76100'); 
-INSERT INTO Library_Branch (branch_id, branch_name, branch_address) VALUES (5, 'UTA Branch', '123 Cooper St, Arlington TX 76101');
+-- -- Q4b: Insert New Branches 
+-- INSERT INTO Library_Branch (branch_id, branch_name, branch_address) VALUES (4, 'North Branch', '456 NW, Irving, TX 76100'); 
+-- INSERT INTO Library_Branch (branch_id, branch_name, branch_address) VALUES (5, 'UTA Branch', '123 Cooper St, Arlington TX 76101');
 
--- Q5: Books Loaned Between March 5 and 23, 2022 
-SELECT b.title, lb.branch_name, DATEDIFF(bl.returned_date, bl.date_out) AS days_borrowed 
-FROM Book_Loans bl 
-JOIN Book b ON bl.book_id = b.book_id 
-JOIN Library_Branch lb ON bl.branch_id = lb.branch_id 
-WHERE bl.date_out BETWEEN '2022-03-05' AND '2022-03-23'; 
+-- -- Q5: Books Loaned Between March 5 and 23, 2022 
+-- SELECT b.title, lb.branch_name, DATEDIFF(bl.returned_date, bl.date_out) AS days_borrowed 
+-- FROM Book_Loans bl 
+-- JOIN Book b ON bl.book_id = b.book_id 
+-- JOIN Library_Branch lb ON bl.branch_id = lb.branch_id 
+-- WHERE bl.date_out BETWEEN '2022-03-05' AND '2022-03-23'; 
 
--- Q6: Borrowers With Books Not Returned 
-SELECT br.name FROM Borrower br 
-JOIN Book_Loans bl ON br.card_no = bl.card_no 
-WHERE bl.returned_date IS NULL;
+-- -- Q6: Borrowers With Books Not Returned 
+-- SELECT br.name FROM Borrower br 
+-- JOIN Book_Loans bl ON br.card_no = bl.card_no 
+-- WHERE bl.returned_date IS NULL;
 
--- Q7: Borrowed Books Report by Return Status 
-SELECT lb.branch_name, 
-SUM(CASE WHEN bl.returned_date IS NOT NULL THEN 1 ELSE 0 END) AS returned, 
-SUM(CASE WHEN bl.returned_date IS NULL AND bl.due_date >= CURDATE() THEN 1 ELSE 0 END) AS still_borrowed, 
-SUM(CASE WHEN bl.returned_date IS NULL AND bl.due_date < CURDATE() THEN 1 ELSE 0 END) AS late 
-FROM Book_Loans bl 
-JOIN Library_Branch lb ON bl.branch_id = lb.branch_id 
-GROUP BY lb.branch_name; 
+-- -- Q7: Borrowed Books Report by Return Status 
+-- SELECT lb.branch_name, 
+-- SUM(CASE WHEN bl.returned_date IS NOT NULL THEN 1 ELSE 0 END) AS returned, 
+-- SUM(CASE WHEN bl.returned_date IS NULL AND bl.due_date >= CURDATE() THEN 1 ELSE 0 END) AS still_borrowed, 
+-- SUM(CASE WHEN bl.returned_date IS NULL AND bl.due_date < CURDATE() THEN 1 ELSE 0 END) AS late 
+-- FROM Book_Loans bl 
+-- JOIN Library_Branch lb ON bl.branch_id = lb.branch_id 
+-- GROUP BY lb.branch_name; 
 
--- Q8: Books and Max Days Borrowed 
-SELECT b.title, MAX(DATEDIFF(bl.returned_date, bl.date_out)) AS max_days 
-FROM Book_Loans bl 
-JOIN Book b ON bl.book_id = b.book_id 
-GROUP BY b.title; 
+-- -- Q8: Books and Max Days Borrowed 
+-- SELECT b.title, MAX(DATEDIFF(bl.returned_date, bl.date_out)) AS max_days 
+-- FROM Book_Loans bl 
+-- JOIN Book b ON bl.book_id = b.book_id 
+-- GROUP BY b.title; 
 
--- Q9: Report for Ethan Martinez 
-SELECT b.title, ba.author_name, DATEDIFF(COALESCE(bl.returned_date, CURDATE()), bl.date_out) AS days_borrowed, 
-CASE WHEN bl.returned_date IS NULL AND bl.due_date < CURDATE() THEN 'Late' ELSE 'On time' END AS status 
-FROM Borrower br 
-JOIN Book_Loans bl ON br.card_no = bl.card_no 
-JOIN Book b ON bl.book_id = b.book_id 
-JOIN Book_Authors ba ON b.book_id = ba.book_id 
-WHERE br.name = 'Ethan Martinez' 
-ORDER BY bl.date_out; 
+-- -- Q9: Report for Ethan Martinez 
+-- SELECT b.title, ba.author_name, DATEDIFF(COALESCE(bl.returned_date, CURDATE()), bl.date_out) AS days_borrowed, 
+-- CASE WHEN bl.returned_date IS NULL AND bl.due_date < CURDATE() THEN 'Late' ELSE 'On time' END AS status 
+-- FROM Borrower br 
+-- JOIN Book_Loans bl ON br.card_no = bl.card_no 
+-- JOIN Book b ON bl.book_id = b.book_id 
+-- JOIN Book_Authors ba ON b.book_id = ba.book_id 
+-- WHERE br.name = 'Ethan Martinez' 
+-- ORDER BY bl.date_out; 
 
--- Q10: Borrowers from West Branch 
-SELECT DISTINCT br.name, br.address 
-FROM Borrower br 
-JOIN Book_Loans bl ON br.card_no = bl.card_no 
-JOIN Library_Branch lb ON bl.branch_id = lb.branch_id 
-WHERE lb.branch_name = 'West Branch'; 
+-- -- Q10: Borrowers from West Branch 
+-- SELECT DISTINCT br.name, br.address 
+-- FROM Borrower br 
+-- JOIN Book_Loans bl ON br.card_no = bl.card_no 
+-- JOIN Library_Branch lb ON bl.branch_id = lb.branch_id 
+-- WHERE lb.branch_name = 'West Branch'; 
 
 
 
