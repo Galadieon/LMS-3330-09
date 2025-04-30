@@ -25,7 +25,7 @@ CREATE TABLE Borrower (
 );
 
 CREATE TABLE Book ( 
-	book_id INT PRIMARY KEY, 
+	book_id INT PRIMARY KEY AUTO_INCREMENT, 
 	title VARCHAR(255), 
 	book_publisher VARCHAR(100), 
 	FOREIGN KEY (book_publisher) REFERENCES Publisher(publisher_name) 
