@@ -28,13 +28,13 @@ DROP TABLE IF EXISTS `Book`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `Book` (
-  `book_id` int NOT NULL,
+  `book_id` int NOT NULL AUTO_INCREMENT,
   `title` varchar(255) DEFAULT NULL,
   `book_publisher` varchar(100) DEFAULT NULL,
   PRIMARY KEY (`book_id`),
   KEY `book_publisher` (`book_publisher`),
   CONSTRAINT `Book_ibfk_1` FOREIGN KEY (`book_publisher`) REFERENCES `Publisher` (`publisher_name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=1000 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -259,4 +259,4 @@ SET character_set_client = @saved_cs_client;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-04-29 19:41:36
+-- Dump completed on 2025-04-29 21:19:31
