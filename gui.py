@@ -115,7 +115,7 @@ class LMSApp:
         self.q1_output_label.pack(pady=10)
 
         ttk.Label(frame, text="SQL Queries Executed:").pack(pady=5)
-        self.q1_sql_query_text = tk.Text(frame, height=6, width=70, state='disabled')
+        self.q1_sql_query_text = tk.Text(frame, height=10, width=90, state='disabled')
         self.q1_sql_query_text.pack(pady=5)
 
         ttk.Label(frame, text="Book Copies Output:").pack(pady=5)
@@ -266,12 +266,12 @@ class LMSApp:
 
         self.q2_sql_query_label = ttk.Label(frame, text="SQL Query:")
         self.q2_sql_query_label.pack(pady=5)
-        self.q2_sql_query_text = tk.Text(frame, height=3, width=70, state='disabled')
+        self.q2_sql_query_text = tk.Text(frame, height=10, width=90, state='disabled')
         self.q2_sql_query_text.pack(pady=5)
 
         self.q2_result_label = ttk.Label(frame, text="Result:")
         self.q2_result_label.pack(pady=5)
-        self.q2_result_text = tk.Text(frame, height=5, width=70, state='disabled')
+        self.q2_result_text = tk.Text(frame, height=10, width=90, state='disabled')
         self.q2_result_text.pack(pady=5)
 
 
@@ -354,7 +354,7 @@ class LMSApp:
         self.q3_output_label.pack(pady=10)
 
         ttk.Label(frame, text="SQL Queries Executed:").pack(pady=5)
-        self.q3_sql_query_text = tk.Text(frame, height=10, width=70, state='disabled') # Increased height
+        self.q3_sql_query_text = tk.Text(frame, height=10, width=90, state='disabled')
         self.q3_sql_query_text.pack(pady=5)
 
         ttk.Label(frame, text="Book Copies Added:").pack(pady=5)
@@ -482,7 +482,7 @@ class LMSApp:
         self.q4_output_label.pack(pady=10)
 
         ttk.Label(frame, text="SQL Query Executed:").pack(pady=5)
-        self.q4_sql_query_text = tk.Text(frame, height=4, width=70, state='disabled')
+        self.q4_sql_query_text = tk.Text(frame, height=10, width=90, state='disabled')
         self.q4_sql_query_text.pack(pady=5)
 
         ttk.Label(frame, text="Copies Loaned Output:").pack(pady=5)
@@ -586,7 +586,7 @@ class LMSApp:
         self.q5_output_label.pack(pady=10)
 
         ttk.Label(frame, text="SQL Query Executed:").pack(pady=5)
-        self.q5_sql_query_text = tk.Text(frame, height=8, width=70, state='disabled')
+        self.q5_sql_query_text = tk.Text(frame, height=10, width=90, state='disabled')
         self.q5_sql_query_text.pack(pady=5)
 
         ttk.Label(frame, text="Late Loans Output:").pack(pady=5)
@@ -705,7 +705,7 @@ class LMSApp:
         self.q6a_output_label.pack(pady=10)
 
         ttk.Label(frame, text="SQL Query Executed:").pack(pady=5)
-        self.q6a_sql_query_text = tk.Text(frame, height=5, width=80, state='disabled')
+        self.q6a_sql_query_text = tk.Text(frame, height=10, width=90, state='disabled')
         self.q6a_sql_query_text.pack(pady=5)
 
         ttk.Label(frame, text="Borrower Late Fees Output:").pack(pady=5)
@@ -834,7 +834,7 @@ class LMSApp:
         self.q6b_output_label.pack(pady=10)
 
         ttk.Label(frame, text="SQL Query Executed:").pack(pady=5)
-        self.q6b_sql_query_text = tk.Text(frame, height=8, width=100, state='disabled')
+        self.q6b_sql_query_text = tk.Text(frame, height=10, width=90, state='disabled')
         self.q6b_sql_query_text.pack(pady=5)
 
         ttk.Label(frame, text="Book Loan Info Output:").pack(pady=5)
@@ -1042,5 +1042,5 @@ class LMSApp:
 if __name__ == "__main__":
     root = tk.Tk()
     app = LMSApp(root)
-    root.protocol("WM_DELETE_WINDOW", app.on_closing)
+    # root.protocol("WM_DELETE_WINDOW", app.on_closing)
     root.mainloop()
