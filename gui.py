@@ -15,7 +15,7 @@ class LMSApp:
     def __init__(self, root):
         self.root = root
         self.root.title("LMS Application")
-        self.root.geometry("800x750")
+        self.root.geometry("1500x1000")
 
         self.db_connection = None
         self.connect_db()
