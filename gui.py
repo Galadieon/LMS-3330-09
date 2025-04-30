@@ -56,8 +56,8 @@ class LMSApp:
         # Create tabs for each task/query group
         self.tab_task2_q1 = ttk.Frame(self.notebook)
         self.tab_task2_q2 = ttk.Frame(self.notebook)
-        self.tab_task2_q3 = ttk.Frame(self.notebook) # New tab for Q3
-        self.tab_task2_q4 = ttk.Frame(self.notebook)
+        self.tab_task2_q3 = ttk.Frame(self.notebook)
+        self.tab_task2_q4 = ttk.Frame(self.notebook) # New tab for Q4
         self.tab_task2_q5 = ttk.Frame(self.notebook)
         self.tab_task2_q6a = ttk.Frame(self.notebook)
         self.tab_task2_q6b = ttk.Frame(self.notebook)
@@ -65,7 +65,7 @@ class LMSApp:
         self.notebook.add(self.tab_task2_q1, text='Q1 (Checkout)')
         self.notebook.add(self.tab_task2_q2, text='Q2 (Add Borrower)')
         self.notebook.add(self.tab_task2_q3, text='Q3 (Add Book)')
-        self.notebook.add(self.tab_task2_q4, text='Q4 (Copies Loaned)')
+        self.notebook.add(self.tab_task2_q4, text='Q4 (Copies Loaned)') # Add Q4 tab
         self.notebook.add(self.tab_task2_q5, text='Q5 (Late Loans by Due Date)')
         self.notebook.add(self.tab_task2_q6a, text='Q6a (Borrower Late Fees)')
         self.notebook.add(self.tab_task2_q6b, text='Q6b (Book Loan Info)')
@@ -74,6 +74,8 @@ class LMSApp:
         self.setup_tab_task2_q1()
         self.setup_tab_task2_q2()
         self.setup_tab_task2_q3()
+        self.setup_tab_task2_q4() # Setup the copies loaned tab
+        # Add methods to setup other tabs similarly
 
     def setup_tab_task2_q1(self):
         """Sets up the interface for Query 1 (Checkout Book)."""
@@ -390,7 +392,6 @@ class LMSApp:
             self.q3_sql_query_text.insert(tk.END, f"INSERT INTO Book(title, book_publisher) VALUES ('{book_title}', '{publisher_name}');\n")
 
             # 2. Retrieve book_id of newly added book
-            # Use lastrowid for the auto-incremented primary key
             selected_book_id = cursor.lastrowid
 
             # 3. Add author info of newly added book
@@ -437,6 +438,106 @@ class LMSApp:
             print(f"Error adding book: {e}")
             if self.db_connection:
                  self.db_connection.rollback() # Roll back changes if something goes wrong
+        except Exception as e:
+             messagebox.showerror("Application Error", f"An unexpected error occurred: {e}")
+             print(f"An unexpected error occurred: {e}")
+        finally:
+            if cursor:
+                cursor.close()
+
+    def setup_tab_task2_q4(self):
+        """Sets up the interface for Query 4 (Copies Loaned per Branch)."""
+        frame = self.tab_task2_q4
+
+        ttk.Label(frame, text="Copies Loaned per Branch", font=('Arial', 14)).pack(pady=10)
+        ttk.Label(frame, text="Query Purpose: List the number of copies loaned out per branch for a given book title.").pack(pady=5)
+
+        input_frame = ttk.Frame(frame)
+        input_frame.pack(pady=10)
+
+        ttk.Label(input_frame, text="Book Title:").grid(row=0, column=0, padx=5, pady=5, sticky="w")
+        self.q4_book_title_entry = ttk.Entry(input_frame, width=40)
+        self.q4_book_title_entry.grid(row=0, column=1, padx=5, pady=5)
+
+        ttk.Button(frame, text="List Copies Loaned", command=self.execute_task2_q4).pack(pady=10)
+
+        self.q4_output_label = ttk.Label(frame, text="")
+        self.q4_output_label.pack(pady=10)
+
+        ttk.Label(frame, text="SQL Query Executed:").pack(pady=5)
+        self.q4_sql_query_text = tk.Text(frame, height=4, width=70, state='disabled')
+        self.q4_sql_query_text.pack(pady=5)
+
+        ttk.Label(frame, text="Copies Loaned Output:").pack(pady=5)
+        # Using Treeview to display the copies loaned out per branch
+        self.q4_copies_output_tree = ttk.Treeview(frame, columns=('book_id', 'book_title', 'branch_id', 'branch_name', 'num_of_copies_loaned'), show='headings')
+        self.q4_copies_output_tree.heading('book_id', text='Book ID')
+        self.q4_copies_output_tree.heading('book_title', text='Book Title')
+        self.q4_copies_output_tree.heading('branch_id', text='Branch ID')
+        self.q4_copies_output_tree.heading('branch_name', text='Branch Name')
+        self.q4_copies_output_tree.heading('num_of_copies_loaned', text='Copies Loaned')
+        self.q4_copies_output_tree.column('book_id', width=80, anchor='center')
+        self.q4_copies_output_tree.column('book_title', width=200)
+        self.q4_copies_output_tree.column('branch_id', width=80, anchor='center')
+        self.q4_copies_output_tree.column('branch_name', width=150)
+        self.q4_copies_output_tree.column('num_of_copies_loaned', width=120, anchor='center')
+        self.q4_copies_output_tree.pack(pady=5, fill="both", expand=True)
+
+
+    def execute_task2_q4(self):
+        """Executes the query for Query 4 (Copies Loaned per Branch)."""
+        book_title = self.q4_book_title_entry.get()
+
+        if not book_title:
+            messagebox.showwarning("Input Error", "Please enter a book title.")
+            return
+
+        cursor = None
+        try:
+            cursor = self.db_connection.cursor()
+
+            # SQL query to list copies loaned out per branch for a given book title
+            sql_query = """
+                SELECT
+                    Bk.book_id,
+                    Bk.title,
+                    B_L.branch_id,
+                    L_B.branch_name,
+                    COUNT(*) AS num_of_copies_loaned
+                FROM Book AS Bk
+                JOIN Book_Loans AS B_L ON Bk.book_id = B_L.book_id
+                JOIN Library_Branch AS L_B ON B_L.branch_id = L_B.branch_id
+                WHERE Bk.title = %s
+                GROUP BY Bk.book_id, Bk.title, B_L.branch_id, L_B.branch_name;
+            """
+            values = (book_title,)
+
+            # Display the query being executed
+            self.q4_sql_query_text.config(state='normal')
+            self.q4_sql_query_text.delete(1.0, tk.END)
+            self.q4_sql_query_text.insert(tk.END, sql_query.replace('%s', f"'{book_title}'"))
+            self.q4_sql_query_text.config(state='disabled')
+
+            cursor.execute(sql_query, values)
+            results = cursor.fetchall()
+
+            # Clear previous results in the Treeview
+            for item in self.q4_copies_output_tree.get_children():
+                self.q4_copies_output_tree.delete(item)
+
+            if not results:
+                self.q4_output_label.config(text=f"No copies of '{book_title}' are currently loaned out.")
+                print("Action output: 0 row(s) returned.")
+            else:
+                # Insert results into the Treeview
+                for row in results:
+                    self.q4_copies_output_tree.insert('', tk.END, values=row)
+                self.q4_output_label.config(text=f"Copies loaned out for '{book_title}':")
+                print(f"Action output: {len(results)} row(s) returned.")
+
+        except Error as e:
+            messagebox.showerror("Database Error", f"Error listing copies loaned: {e}")
+            print(f"Error listing copies loaned: {e}")
         except Exception as e:
              messagebox.showerror("Application Error", f"An unexpected error occurred: {e}")
              print(f"An unexpected error occurred: {e}")
@@ -525,6 +626,128 @@ class LMSApp:
         except Error as e:
             messagebox.showerror("Database Error", f"Error adding borrower: {e}")
             print(f"Error adding borrower: {e}")
+            if self.db_connection:
+                 self.db_connection.rollback() # Roll back changes if something goes wrong
+        except Exception as e:
+             messagebox.showerror("Application Error", f"An unexpected error occurred: {e}")
+             print(f"An unexpected error occurred: {e}")
+        finally:
+            if cursor:
+                cursor.close()
+
+    def setup_tab_task2_q3(self):
+        """Sets up the interface for Query 3 (Add New Book)."""
+        frame = self.tab_task2_q3
+
+        ttk.Label(frame, text="Add New Book", font=('Arial', 14)).pack(pady=10)
+        ttk.Label(frame, text="Query Purpose: Add a new book with publisher and author information to all branches.").pack(pady=5)
+
+        input_frame = ttk.Frame(frame)
+        input_frame.pack(pady=10)
+
+        ttk.Label(input_frame, text="Book Title:").grid(row=0, column=0, padx=5, pady=5, sticky="w")
+        self.q3_book_title_entry = ttk.Entry(input_frame, width=40)
+        self.q3_book_title_entry.grid(row=0, column=1, padx=5, pady=5)
+
+        ttk.Label(input_frame, text="Publisher Name:").grid(row=1, column=0, padx=5, pady=5, sticky="w")
+        self.q3_publisher_entry = ttk.Entry(input_frame, width=40)
+        self.q3_publisher_entry.grid(row=1, column=1, padx=5, pady=5)
+
+        ttk.Label(input_frame, text="Author Name:").grid(row=2, column=0, padx=5, pady=5, sticky="w")
+        self.q3_author_entry = ttk.Entry(input_frame, width=40)
+        self.q3_author_entry.grid(row=2, column=1, padx=5, pady=5)
+
+        ttk.Button(frame, text="Add Book", command=self.execute_task2_q3).pack(pady=10)
+
+        self.q3_output_label = ttk.Label(frame, text="")
+        self.q3_output_label.pack(pady=10)
+
+        ttk.Label(frame, text="SQL Queries Executed:").pack(pady=5)
+        self.q3_sql_query_text = tk.Text(frame, height=8, width=70, state='disabled')
+        self.q3_sql_query_text.pack(pady=5)
+
+        ttk.Label(frame, text="Book Copies Added:").pack(pady=5)
+        # Using Treeview to show the book copies added to each branch
+        self.q3_copies_output_tree = ttk.Treeview(frame, columns=('branch_id', 'no_of_copies'), show='headings')
+        self.q3_copies_output_tree.heading('branch_id', text='Branch ID')
+        self.q3_copies_output_tree.heading('no_of_copies', text='No. of Copies Added')
+        self.q3_copies_output_tree.column('branch_id', width=100, anchor='center')
+        self.q3_copies_output_tree.column('no_of_copies', width=150, anchor='center')
+        self.q3_copies_output_tree.pack(pady=5, fill="both", expand=True)
+
+
+    def execute_task2_q3(self):
+        """Executes the queries for Query 3 (Add New Book)."""
+        book_title = self.q3_book_title_entry.get()
+        publisher_name = self.q3_publisher_entry.get()
+        author_name = self.q3_author_entry.get()
+        copies_per_branch = 5 # As per requirement
+
+        if not book_title or not publisher_name or not author_name:
+            messagebox.showwarning("Input Error", "Please fill in all fields.")
+            return
+
+        cursor = None
+        try:
+            cursor = self.db_connection.cursor()
+
+            # Display the queries being executed
+            self.q3_sql_query_text.config(state='normal')
+            self.q3_sql_query_text.delete(1.0, tk.END)
+
+
+            # 1. Add new book with publisher info
+            sql_insert_book = "INSERT INTO Book(title, book_publisher) VALUES (%s, %s)"
+            book_values = (book_title, publisher_name)
+            cursor.execute(sql_insert_book, book_values)
+
+            self.q3_sql_query_text.insert(tk.END, f"INSERT INTO Book(title, book_publisher) VALUES ('{book_title}', '{publisher_name}');\n")
+
+            # 2. Retrieve book_id of newly added book
+            selected_book_id = cursor.lastrowid
+
+            # 3. Add author info of newly added book
+            sql_insert_author = "INSERT INTO Book_Authors(book_id, author_name) VALUES (%s, %s)"
+            author_values = (selected_book_id, author_name)
+            cursor.execute(sql_insert_author, author_values)
+
+            self.q3_sql_query_text.insert(tk.END, f"INSERT INTO Book_Authors(book_id, author_name) VALUES ({selected_book_id}, '{author_name}');\n")
+
+            # 4. Retrieve number of library branches
+            sql_count_branches = "SELECT COUNT(*) FROM Library_Branch"
+            cursor.execute(sql_count_branches)
+            count_of_library_branches = cursor.fetchone()[0]
+            num_of_library_branches = int(count_of_library_branches)
+
+            self.q3_sql_query_text.insert(tk.END, f"SELECT COUNT(*) FROM Library_Branch;\n")
+
+            # Clear previous results in the Treeview
+            for item in self.q3_copies_output_tree.get_children():
+                self.q3_copies_output_tree.delete(item)
+
+            # 5. Add 5 copies per branch for newly added book
+            sql_insert_copies = "INSERT INTO Book_Copies(book_id, branch_id, no_of_copies) VALUES (%s, %s, %s)"
+            for i in range(1, num_of_library_branches + 1):
+                copies_values = (selected_book_id, i, copies_per_branch)
+                cursor.execute(sql_insert_copies, copies_values)
+                self.q3_sql_query_text.insert(tk.END, f"INSERT INTO Book_Copies(book_id, branch_id, no_of_copies) VALUES ({selected_book_id}, {i}, {copies_per_branch});\n")
+
+                # Insert into Treeview to show copies added
+                self.q3_copies_output_tree.insert('', tk.END, values=(i, copies_per_branch))
+
+            # Commit all changes if all inserts were successful
+            self.db_connection.commit()
+            self.q3_sql_query_text.config(state='disabled')
+
+
+            output_message = f"New book '{book_title}' by {author_name} (Publisher: {publisher_name}) added successfully with {copies_per_branch} copies at each of the {num_of_library_branches} branches."
+            self.q3_output_label.config(text=output_message)
+
+            print(f"Action output: New book added (book_id: {selected_book_id}), author added, and {copies_per_branch} copies added to {num_of_library_branches} branches.")
+
+        except Error as e:
+            messagebox.showerror("Database Error", f"Error adding book: {e}")
+            print(f"Error adding book: {e}")
             if self.db_connection:
                  self.db_connection.rollback() # Roll back changes if something goes wrong
         except Exception as e:
