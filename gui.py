@@ -41,3 +41,14 @@ class LMSApp:
         self.create_late_returns_tab()
         self.create_borrower_late_fees_tab()
         self.create_borrower_book_late_fees_tab()
+
+
+# Main Application Execution
+if __name__ == "__main__":
+    # Basic check for database config
+    if 'your_mysql_user' in DB_CONFIG.values():
+        messagebox.showwarning("Configuration Needed", "Please update DB_CONFIG with your MySQL credentials before running.")
+    else:
+        root = tk.Tk()
+        app = LMSApp(root)
+        root.mainloop()
