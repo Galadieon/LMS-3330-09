@@ -25,7 +25,7 @@ def get_db_connection():
         messagebox.showerror("Database Error", f"Failed to connect to database: {err}")
         return None
 
-# --- Requirement 1: Checkout Book ---
+# Requirement 1: Checkout Book
 def checkout_book(book_id, branch_id, card_no):
     """Handles the book checkout process."""
     conn = get_db_connection()
@@ -76,6 +76,39 @@ def checkout_book(book_id, branch_id, card_no):
 
     return result_text, sql_query_executed
 
+# Requirement 2: Add New Borrower
+def add_borrower(name, address, phone):
+    """Adds a new borrower and returns their new card number."""
+    conn = get_db_connection()
+    if not conn:
+        return None, ""
+
+    cursor = conn.cursor()
+    new_card_no = None
+    sql_query_executed = ""
+
+    try:
+        # SQL Query: Insert into Borrower. card_no is AUTO_INCREMENT.
+        sql_query = """
+        INSERT INTO Borrower (name, Address, Phone)
+        VALUES (%s, %s, %s)
+        """
+        sql_query_executed = sql_query.strip() # Store the query string
+        cursor.execute(sql_query, (name, address, phone))
+        conn.commit()
+
+        # Get the last inserted ID (the new card_no)
+        new_card_no = cursor.lastrowid
+
+    except mysql.connector.Error as err:
+        conn.rollback()
+        messagebox.showerror("Database Error", f"Error adding borrower: {err}")
+    finally:
+        cursor.close()
+        conn.close()
+
+    return new_card_no, sql_query_executed
+
 # GUI Implementation
 class LMSApp:
     def __init__(self, root):
@@ -87,7 +120,7 @@ class LMSApp:
 
         # Create Tabs
         self.create_checkout_tab()
-        # self.create_add_borrower_tab()
+        self.create_add_borrower_tab()
         # self.create_add_book_tab()
         # self.create_loaned_copies_tab()
         # self.create_late_returns_tab()
@@ -145,6 +178,59 @@ class LMSApp:
         self.checkout_result_text.insert(tk.END, result)
         self.checkout_sql_text.delete(1.0, tk.END)
         self.checkout_sql_text.insert(tk.END, sql_query)
+
+
+    def create_add_borrower_tab(self):
+        tab = ttk.Frame(self.notebook)
+        self.notebook.add(tab, text="Add Borrower")
+
+        ttk.Label(tab, text="Add information about a new Borrower.").pack(pady=5)
+
+        frame = ttk.Frame(tab)
+        frame.pack(pady=10)
+
+        ttk.Label(frame, text="Name:").grid(row=0, column=0, padx=5, pady=5, sticky="w")
+        self.borrower_name_entry = ttk.Entry(frame)
+        self.borrower_name_entry.grid(row=0, column=1, padx=5, pady=5)
+
+        ttk.Label(frame, text="Address:").grid(row=1, column=0, padx=5, pady=5, sticky="w")
+        self.borrower_address_entry = ttk.Entry(frame)
+        self.borrower_address_entry.grid(row=1, column=1, padx=5, pady=5)
+
+        ttk.Label(frame, text="Phone:").grid(row=2, column=0, padx=5, pady=5, sticky="w")
+        self.borrower_phone_entry = ttk.Entry(frame)
+        self.borrower_phone_entry.grid(row=2, column=1, padx=5, pady=5)
+
+        ttk.Button(tab, text="Add Borrower", command=self.on_add_borrower).pack(pady=10)
+
+        ttk.Label(tab, text="Result:").pack(pady=5)
+        self.borrower_result_text = tk.Text(tab, height=5, width=60)
+        self.borrower_result_text.pack(pady=5)
+
+        ttk.Label(tab, text="SQL Query Executed:").pack(pady=5)
+        self.borrower_sql_text = tk.Text(tab, height=5, width=60)
+        self.borrower_sql_text.pack(pady=5)
+
+
+    def on_add_borrower(self):
+        name = self.borrower_name_entry.get()
+        address = self.borrower_address_entry.get()
+        phone = self.borrower_phone_entry.get()
+
+        if not name or not address or not phone:
+            messagebox.showwarning("Input Error", "Please fill in all fields.")
+            return
+
+        new_card_no, sql_query = add_borrower(name, address, phone)
+
+        self.borrower_result_text.delete(1.0, tk.END)
+        if new_card_no:
+            self.borrower_result_text.insert(tk.END, f"New borrower added successfully!\nNew Card No: {new_card_no}")
+        else:
+             self.borrower_result_text.insert(tk.END, "Failed to add new borrower. Check database connection and logs.")
+
+        self.borrower_sql_text.delete(1.0, tk.END)
+        self.borrower_sql_text.insert(tk.END, sql_query)
 
 
 # Main Application Execution
