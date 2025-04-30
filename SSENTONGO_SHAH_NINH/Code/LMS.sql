@@ -114,7 +114,6 @@ CREATE TABLE `Book_Loans` (
   `date_out` date NOT NULL,
   `due_date` date DEFAULT NULL,
   `returned_date` date DEFAULT NULL,
-  `Late` int DEFAULT NULL,
   PRIMARY KEY (`book_id`,`branch_id`,`card_no`,`date_out`),
   KEY `branch_id` (`branch_id`),
   KEY `card_no` (`card_no`),
@@ -130,7 +129,7 @@ CREATE TABLE `Book_Loans` (
 
 LOCK TABLES `Book_Loans` WRITE;
 /*!40000 ALTER TABLE `Book_Loans` DISABLE KEYS */;
-INSERT INTO `Book_Loans` VALUES (1,1,123456,'2022-01-01','2022-02-01','2022-02-01',0),(2,1,789012,'2022-01-02','2022-02-02',NULL,1),(3,2,345678,'2022-01-03','2022-02-03',NULL,1),(4,3,901234,'2022-01-04','2022-02-04','2022-02-04',0),(5,1,567890,'2022-01-05','2022-02-05','2022-02-09',1),(6,2,234567,'2022-01-06','2022-02-06','2022-02-10',1),(7,2,890123,'2022-01-07','2022-02-07','2022-03-08',1),(8,3,456789,'2022-01-08','2022-02-08','2022-03-10',1),(9,1,111111,'2022-01-09','2022-02-09','2022-02-06',0),(10,2,222222,'2022-01-10','2022-02-10','2022-02-07',0),(11,1,333333,'2022-03-01','2022-03-08','2022-03-08',0),(12,3,444444,'2022-03-03','2022-03-10','2022-03-10',0),(13,3,555555,'2022-02-03','2022-03-03','2022-02-18',0),(14,1,565656,'2022-01-14','2022-02-14','2022-03-31',1),(15,3,676767,'2022-01-15','2022-02-15','2022-02-21',1),(16,2,787878,'2022-03-05','2022-03-12','2022-03-24',1),(17,3,989898,'2022-03-23','2022-03-30','2022-03-30',0),(18,3,121212,'2022-01-18','2022-02-18','2022-02-18',0),(19,1,232323,'2022-03-24','2022-03-31','2022-03-31',0),(20,3,343434,'2022-01-21','2022-02-21','2022-02-21',0),(21,3,454545,'2022-01-24','2022-02-24','2022-02-24',0);
+INSERT INTO `Book_Loans` VALUES (1,1,123456,'2022-01-01','2022-02-01','2022-02-01'),(2,1,789012,'2022-01-02','2022-02-02',NULL),(3,2,345678,'2022-01-03','2022-02-03',NULL),(4,3,901234,'2022-01-04','2022-02-04','2022-02-04'),(5,1,567890,'2022-01-05','2022-02-05','2022-02-09'),(6,2,234567,'2022-01-06','2022-02-06','2022-02-10'),(7,2,890123,'2022-01-07','2022-02-07','2022-03-08'),(8,3,456789,'2022-01-08','2022-02-08','2022-03-10'),(9,1,111111,'2022-01-09','2022-02-09','2022-02-06'),(10,2,222222,'2022-01-10','2022-02-10','2022-02-07'),(11,1,333333,'2022-03-01','2022-03-08','2022-03-08'),(12,3,444444,'2022-03-03','2022-03-10','2022-03-10'),(13,3,555555,'2022-02-03','2022-03-03','2022-02-18'),(14,1,565656,'2022-01-14','2022-02-14','2022-03-31'),(15,3,676767,'2022-01-15','2022-02-15','2022-02-21'),(16,2,787878,'2022-03-05','2022-03-12','2022-03-24'),(17,3,989898,'2022-03-23','2022-03-30','2022-03-30'),(18,3,121212,'2022-01-18','2022-02-18','2022-02-18'),(19,1,232323,'2022-03-24','2022-03-31','2022-03-31'),(20,3,343434,'2022-01-21','2022-02-21','2022-02-21'),(21,3,454545,'2022-01-24','2022-02-24','2022-02-24');
 /*!40000 ALTER TABLE `Book_Loans` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -171,7 +170,6 @@ CREATE TABLE `Library_Branch` (
   `branch_id` int NOT NULL,
   `branch_name` varchar(100) DEFAULT NULL,
   `branch_address` varchar(255) DEFAULT NULL,
-  `LateFee` decimal(10,2) DEFAULT NULL,
   PRIMARY KEY (`branch_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -182,7 +180,7 @@ CREATE TABLE `Library_Branch` (
 
 LOCK TABLES `Library_Branch` WRITE;
 /*!40000 ALTER TABLE `Library_Branch` DISABLE KEYS */;
-INSERT INTO `Library_Branch` VALUES (1,'Main Branch','123 Main St, New York, NY 10003',1.20),(2,'West Branch','456 West St, Arizona, AR 70622',0.75),(3,'East Branch','789 East St, New Jersy, NY 32032',2.30);
+INSERT INTO `Library_Branch` VALUES (1,'Main Branch','123 Main St, New York, NY 10003'),(2,'West Branch','456 West St, Arizona, AR 70622'),(3,'East Branch','789 East St, New Jersy, NY 32032');
 /*!40000 ALTER TABLE `Library_Branch` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -210,45 +208,6 @@ LOCK TABLES `Publisher` WRITE;
 INSERT INTO `Publisher` VALUES ('Allen & Unwin','212-782-9001','22 New Wharf Rd, Arizona, AR 70654'),('American Publishing Company','682-243-3524','7652 Northgate way lane, Georgia, GA 30054'),('Bantam Books','313-243-5354','1745 Broadway, New York, NY 10019'),('Chapman and Hall','833-342-2343','789 Oak St, Texas, TX 76010'),('Chatto & Windus','442-727-3800','Bloomsbury House, 7477 Great Russell St, Arizona, AR 72965'),('Doubleday','212-782-9000','789 Division St, Minnesota, MN 55344'),('Faber and Faber','201-797-3800','463 south centre street, Arizona, AR 71653'),('Harper & Row','212-207-7000','1195 Border street, Montana, MT 59007'),('HarperCollins','212-207-7000','195 Broadway, New York, NY 10007'),('Little, Brown and Company','212-764-2000','111 Huddle St, New Jersey, NJ 32014'),('Pan Books','313-243-5353','567 Pine Tree Rd, Colorado, CO 87348'),('Penguin Books','212-366-3000','475 Hudson St, New York, NY 10014'),('Penguin Classics','212-366-2000','123 Main St, California, CA 01383'),('Random House India','291-225-6634','423 baywatch centre street, Alabama, AL 30513'),('Scribner','212-207-7474','19 Broadway, New York, NY 10007'),('Thomas Cautley Newby','243-353-2352','890 Elmwood Dr, Floride, FL 98238'),('Ward, Lock and Co.','647-242-3434','456 Maple Ave, Texas, TX 76013 ');
 /*!40000 ALTER TABLE `Publisher` ENABLE KEYS */;
 UNLOCK TABLES;
-
---
--- Temporary view structure for view `vBookLoanInfo`
---
-
-DROP TABLE IF EXISTS `vBookLoanInfo`;
-/*!50001 DROP VIEW IF EXISTS `vBookLoanInfo`*/;
-SET @saved_cs_client     = @@character_set_client;
-/*!50503 SET character_set_client = utf8mb4 */;
-/*!50001 CREATE VIEW `vBookLoanInfo` AS SELECT 
- 1 AS `Card_No`,
- 1 AS `Borrower Name`,
- 1 AS `Date_Out`,
- 1 AS `Due_Date`,
- 1 AS `Returned_date`,
- 1 AS `TotalDays`,
- 1 AS `Book Title`,
- 1 AS `Number of days returned late`,
- 1 AS `Branch ID`,
- 1 AS `LateFeeBalance`*/;
-SET character_set_client = @saved_cs_client;
-
---
--- Final view structure for view `vBookLoanInfo`
---
-
-/*!50001 DROP VIEW IF EXISTS `vBookLoanInfo`*/;
-/*!50001 SET @saved_cs_client          = @@character_set_client */;
-/*!50001 SET @saved_cs_results         = @@character_set_results */;
-/*!50001 SET @saved_col_connection     = @@collation_connection */;
-/*!50001 SET character_set_client      = utf8mb4 */;
-/*!50001 SET character_set_results     = utf8mb4 */;
-/*!50001 SET collation_connection      = utf8mb4_0900_ai_ci */;
-/*!50001 CREATE ALGORITHM=UNDEFINED */
-/*!50013 DEFINER=`root`@`localhost` SQL SECURITY DEFINER */
-/*!50001 VIEW `vBookLoanInfo` AS select `BW`.`card_no` AS `Card_No`,`BW`.`name` AS `Borrower Name`,`B_L`.`date_out` AS `Date_Out`,`B_L`.`due_date` AS `Due_Date`,`B_L`.`returned_date` AS `Returned_date`,(to_days(`B_L`.`returned_date`) - to_days(`B_L`.`date_out`)) AS `TotalDays`,`Bk`.`title` AS `Book Title`,(case when (`B_L`.`returned_date` between `B_L`.`date_out` and `B_L`.`due_date`) then 0 else (to_days(`B_L`.`returned_date`) - to_days(`B_L`.`due_date`)) end) AS `Number of days returned late`,`L_B`.`branch_id` AS `Branch ID`,(case when (`B_L`.`returned_date` between `B_L`.`date_out` and `B_L`.`due_date`) then 0 else (`L_B`.`LateFee` * (to_days(`B_L`.`returned_date`) - to_days(`B_L`.`due_date`))) end) AS `LateFeeBalance` from (((`Borrower` `BW` join `Book_Loans` `B_L` on((`BW`.`card_no` = `B_L`.`card_no`))) join `Book` `Bk` on((`B_L`.`book_id` = `Bk`.`book_id`))) join `Library_Branch` `L_B` on((`B_L`.`branch_id` = `L_B`.`branch_id`))) */;
-/*!50001 SET character_set_client      = @saved_cs_client */;
-/*!50001 SET character_set_results     = @saved_cs_results */;
-/*!50001 SET collation_connection      = @saved_col_connection */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
@@ -259,4 +218,4 @@ SET character_set_client = @saved_cs_client;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-04-29 23:32:56
+-- Dump completed on 2025-04-30  9:09:33
